@@ -1,0 +1,15 @@
+# Build output
+bin/
+obj/
+Content/bin/
+Content/obj/
+
+# IDE / editor
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Source asset zips (extracted PNGs are committed under Content/)
+*.zip
