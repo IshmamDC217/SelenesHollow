@@ -14,9 +14,7 @@ You play as **Selene**, a fire wielder from a noble clan, stranded in the Spirit
 ---
 
 <p align="center">
-  <img src="assets/SeleneTalking.png" width="200" alt="Selene portrait"/>
-  <img src="assets/Selene-attack.png" width="200" alt="Selene sword attack"/>
-  <img src="assets/Selene-punch.png" width="200" alt="Selene punch"/>
+  <img src="assets/SeleneDP.JPG" width="200" alt="Selene portrait"/>
 </p>
 
 ## Chapter 1: Kindling
@@ -109,7 +107,6 @@ SeleneKindling/
 
 <p align="center">
   <img src="assets/SeleneSleep.png" width="250" alt="Selene sleeping"/>
-  <img src="assets/SeleneDP.JPG" width="150" alt="Selene character design"/>
 </p>
 
 ## Credits
