@@ -100,41 +100,30 @@ public class SpiritNPCs
                 Color.White * (pulse * 0.5f * alpha),
                 0f, origin, pulse * 0.4f, SpriteEffects.None, 0f);
 
-            // Name above head when player is nearby
+            // Name + [E] above head when player is nearby
             float dist = Vector2.Distance(_playerPos, s.WorldPos + new Vector2(0, 55));
             if (dist < NAME_RANGE)
             {
                 float nameAlpha = 1f - (dist / NAME_RANGE);
-                nameAlpha *= nameAlpha; // ease out
+                nameAlpha *= nameAlpha;
+                bool canTalk = i == _nearIdx && !_talked.Contains(i);
+                string label = canTalk ? $"{s.Name}   [E]" : s.Name;
                 var namePos = s.WorldPos + new Vector2(0, bob - 28);
-                var nameSize = _font.MeasureString(s.Name);
-                sb.DrawString(_font, s.Name, namePos + Vector2.One,
+                var nameSize = _font.MeasureString(label);
+                sb.DrawString(_font, label, namePos + Vector2.One,
                     Color.Black * (0.4f * nameAlpha), 0f,
                     new Vector2(nameSize.X / 2f, nameSize.Y / 2f),
                     0.6f, SpriteEffects.None, 0f);
-                sb.DrawString(_font, s.Name, namePos,
-                    s.Tint * nameAlpha, 0f,
+                sb.DrawString(_font, label, namePos,
+                    Color.White * nameAlpha, 0f,
                     new Vector2(nameSize.X / 2f, nameSize.Y / 2f),
                     0.6f, SpriteEffects.None, 0f);
             }
         }
     }
 
-    // [E] prompt drawn in world space above the nearby spirit
-    public void DrawPrompt()
-    {
-        if (!Visible || _nearIdx < 0) return;
-        var s = _spirits[_nearIdx];
-        float bob = 4f * MathF.Sin(Globals.RunningSeconds * 4f);
-        var pos = s.WorldPos + new Vector2(0f, 15f + bob); // below the spirit, not above
-        const string label = "[E]";
-        var size = _font.MeasureString(label);
-        var orig = new Vector2(size.X / 2f, size.Y / 2f);
-        Globals.SpriteBatch.DrawString(_font, label, pos + new Vector2(2, 2),
-            Color.Black * 0.6f, 0f, orig, 1f, SpriteEffects.None, 0f);
-        Globals.SpriteBatch.DrawString(_font, label, pos,
-            new Color(220, 240, 255), 0f, orig, 1f, SpriteEffects.None, 0f);
-    }
+    // [E] is now drawn inline with the name above the spirit
+    public void DrawPrompt() { }
 
     private static Texture2D BuildGlow(int size)
     {

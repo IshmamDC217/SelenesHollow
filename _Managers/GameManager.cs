@@ -306,33 +306,27 @@ public class GameManager
             sb.Draw(_wispGlow, pos, null, Color.White * (0.5f * pulse),
                 0f, glowO, pulse * 0.35f, SpriteEffects.None, 0f);
 
-            // Name above head when nearby (fades with distance)
+            // Name + prompt above head (fades with distance)
             float dist = Vector2.Distance(_player.FootPos, _wispWorldPos + new Vector2(0, 55));
             if (dist < 150f)
             {
                 float nameAlpha = 1f - (dist / 150f);
                 nameAlpha *= nameAlpha;
-                string name = "Wisp";
-                var nSz = font.MeasureString(name);
+
+                string label;
+                if (_wispTrainPromptActive)
+                    label = "Wisp   [E] Train";
+                else if (_wispNearby && !_portrait.IsActive)
+                    label = "Wisp   [E]";
+                else
+                    label = "Wisp";
+
+                var nSz = font.MeasureString(label);
                 var nPos = pos + new Vector2(0, -28);
-                sb.DrawString(font, name, nPos + Vector2.One, Color.Black * (0.4f * nameAlpha),
+                sb.DrawString(font, label, nPos + Vector2.One, Color.Black * (0.4f * nameAlpha),
                     0f, new Vector2(nSz.X / 2f, nSz.Y / 2f), 0.6f, SpriteEffects.None, 0f);
-                sb.DrawString(font, name, nPos, new Color(255, 220, 100) * nameAlpha,
+                sb.DrawString(font, label, nPos, Color.White * nameAlpha,
                     0f, new Vector2(nSz.X / 2f, nSz.Y / 2f), 0.6f, SpriteEffects.None, 0f);
-            }
-
-            // Prompt when nearby
-            if (_wispNearby && !_portrait.IsActive)
-            {
-                float pbob = 3f * MathF.Sin(t * 4f);
-                var lpos = pos + new Vector2(0, -30 + pbob);
-
-                string label = _wispTrainPromptActive ? "Train?  [E] Yes" : "[E] Talk";
-                var sz = font.MeasureString(label);
-                sb.DrawString(font, label, lpos + Vector2.One, Color.Black * 0.5f,
-                    0f, new Vector2(sz.X / 2f, sz.Y), 0.75f, SpriteEffects.None, 0f);
-                sb.DrawString(font, label, lpos, new Color(255, 220, 100),
-                    0f, new Vector2(sz.X / 2f, sz.Y), 0.75f, SpriteEffects.None, 0f);
             }
         }
 
