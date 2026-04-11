@@ -19,7 +19,7 @@ public class Game1 : Game
         _graphics.PreferredBackBufferHeight = 800;
         _graphics.ApplyChanges();
 
-        Window.Title = "Selene's Hollow";
+        Window.Title = "Selene: Kindling";
 
         Globals.Content = Content;
         Globals.GraphicsDevice = GraphicsDevice;

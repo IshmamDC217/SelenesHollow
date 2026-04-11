@@ -19,31 +19,31 @@ public class DialogTriggers
         _byCell = new Dictionary<Point, string>
         {
             // Wake-up area, just south of the fountain courtyard
-            { new Point(14, 11), "Where... where am I?" },
-            { new Point(14, 12), "I don't remember coming here." },
-            { new Point(14, 13), "This place... it's familiar somehow." },
+            { new Point(24, 16), "Where... where am I?" },
+            { new Point(24, 17), "I don't remember coming here." },
+            { new Point(24, 18), "This place... it's familiar somehow." },
 
             // Approaching the temple (north of the courtyard)
-            { new Point(13,  8), "These pillars are older than the trees." },
-            { new Point(14,  7), "The temple... I shouldn't go inside." },
+            { new Point(23, 12), "These pillars are older than the trees." },
+            { new Point(24, 10), "The temple... I shouldn't go inside." },
 
             // Western garden
-            { new Point( 7, 14), "A garden? Out here?" },
-            { new Point( 4, 14), "These flowers... they smell like home." },
-            { new Point( 3, 12), "Someone tended this place once." },
+            { new Point(12, 18), "A garden? Out here?" },
+            { new Point( 8, 18), "These flowers... they smell like home." },
+            { new Point( 5, 16), "Someone tended this place once." },
 
             // Eastern ruins
-            { new Point(20, 13), "Ruins. Whoever built this is long gone." },
-            { new Point(24, 13), "The stone is warm. That can't be right." },
-            { new Point(27, 13), "I've gone far enough this way." },
+            { new Point(34, 17), "Ruins. Whoever built this is long gone." },
+            { new Point(38, 17), "The stone is warm. That can't be right." },
+            { new Point(42, 17), "I've gone far enough this way." },
 
-            // Southern grove and chalice
-            { new Point(14, 15), "The path goes south. I should follow it." },
-            { new Point(14, 16), "What's that, glinting up ahead?" },
+            // Southern grove and shrine
+            { new Point(24, 22), "The path goes south. I should follow it." },
+            { new Point(24, 24), "What's that glow up ahead?" },
 
             // Forest fringes
-            { new Point( 8,  3), "The forest is so quiet here." },
-            { new Point(22,  3), "I shouldn't lose sight of the fountain." },
+            { new Point(12,  4), "The forest is so quiet here." },
+            { new Point(36,  4), "I shouldn't lose sight of the fountain." },
         };
     }
 

@@ -1,71 +1,70 @@
-# Selene's Hollow
+# Selene: Kindling
 
-> *She woke up by a fountain she had never seen, in a place she almost remembered.*
+> *She woke up by a fountain she had never seen, in a world she almost remembered.*
 
-A small top-down 2D exploration RPG written in C# on top of [MonoGame](https://www.monogame.net/).
-You play as **Selene** — wandering through ancient ruins, an overgrown garden, a quiet
-forest, and a moonlit clearing, trying to piece together where you came from and why.
+A top-down 2D action RPG written in C# on [MonoGame](https://www.monogame.net/).
+You play as **Selene**, a fire wielder from a noble clan, stranded in the Spirit World with no memory of how she arrived. Guided by **Wisp**, a curious spirit, she must rekindle her fire abilities, earn the trust of the spirit villagers, and uncover the source of a growing corruption.
 
 ![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)
 ![MonoGame](https://img.shields.io/badge/MonoGame-3.8.4-E73C00)
 ![Language](https://img.shields.io/badge/C%23-12-239120)
 ![Platform](https://img.shields.io/badge/Platform-DesktopGL-2D2D2D)
-![Status](https://img.shields.io/badge/status-prototype-blue)
+![Status](https://img.shields.io/badge/status-in%20development-blue)
 
 ---
 
-## The Vibe
+<p align="center">
+  <img src="assets/SeleneTalking.png" width="200" alt="Selene portrait"/>
+  <img src="assets/Selene-attack.png" width="200" alt="Selene sword attack"/>
+  <img src="assets/Selene-punch.png" width="200" alt="Selene punch"/>
+</p>
 
-Wake up. Stand. Walk into the world.
+## Chapter 1: Kindling
 
-The intro takes its time: a black hold, then Selene fades in **asleep on the
-fountain pedestal**. A typewriter line — *"Where am I?"* — drops into a letterbox
-panel. Press space, the world dips back to black, and when it returns Selene is
-on her feet on the path below the fountain. Now it's yours to explore.
+Selene awakens in the Spirit World with no memory of how she arrived, surrounded by curious spirits who are shocked to see a human. She is guided by Wisp, the son of the village leader, who explains that survival here depends on mastering elemental combat, something her own world has long abandoned.
+
+As she struggles to control her unstable fire abilities, Selene helps the spirit villagers with tasks and battles corrupted creatures, gradually earning the trust of the cautious village leader. Throughout this time, she uncovers signs of a growing corruption and is drawn to a sealed temple that reacts to her presence.
+
+Once she has proven herself, the leader entrusts her with the key to enter. Inside, Selene faces a powerful guardian tied to her ancestors' past and, after defeating it, claims an ancient fire-forged blade that begins to stabilize her power, unaware that her arrival has already set greater events into motion across both worlds.
 
 ## Features
 
-- **Cinematic intro** — black hold, scene fade-in, letterbox bars, typewriter
-  dialog, post-dismiss fade-to-black, camera handoff, fade-in to gameplay.
-- **Hand-built 30 x 20 world** with five biomes:
-  - the **fountain courtyard** flanked by pillars
-  - the **temple ruin** at the top of the central axis
-  - a soft **western garden** of bushes, tiny trees, and bush columns
-  - the **eastern ruins** of half-fallen pillars and broken walls
-  - the **southern grove** that frames a chalice clearing
-- **Selene** — full state machine over five sprite sheets (idle bob, run-up,
-  run-down, run-left/right, jump-once) with a procedural drop shadow under
-  her feet and a 5-frame breathing idle stitched out of two source rows.
-- **Continuous WASD movement** in pixel space (260 px/s, normalized
-  diagonals). No grid-snap teleporting.
-- **Per-prop collision** with axis-split sliding — bump a tree, slide along it.
-- **Smooth camera** follow with exponential ease + post-intro snap handoff so
-  the gameplay fade-in starts already centred on the player.
-- **Self-talk dialog system** — `AmbientDialog` panel with typewriter, fade
-  envelope, and a multi-line `ShowSequence` queue.
-- **Cell-based dialog triggers** — sixteen one-shot lines scattered across
-  the map so Selene narrates her own discoveries.
-- **Seven collectible memory orbs** with procedural radial-glow textures,
-  per-orb pulse + bob, and a HUD counter.
-- **Chalice interaction** — proximity prompt `[E]` with a multi-line monologue.
-- **Idle musings** — random Selene thoughts after 22 s of standing still.
-- **F5 restart** — wipes player, intro, triggers, orbs, and dialog state and
-  replays the opening from black.
+- **Cinematic intro** with typewriter dialog, sleeping Selene surrounded by watching spirits, and a Wisp encounter with animated portrait dialog boxes
+- **Real-time arena combat** with WASD movement, fire attacks, melee combat, dodge mechanics, screen shake, spectator crowds, and boss HP bars
+- **Fire powers** including Fireball, Fire Punch, Ember Burst, Flame Shield, and Focus
+- **Melee combat** with animated sprite sheets and directional facing
+- **Spirit World** spanning a 50x30 tile map with five biomes: fountain courtyard, ancient temple, western garden, eastern ruins with a practice arena, and southern grove
+- **Spirit NPCs** with unique names, dialog, and proximity-based name display
+- **Wisp companion** who provides a tutorial, battle commentary, and repeatable training fights
+- **Portrait dialog system** inspired by Megaman Battle Network with animated talking portraits
+- **Dynamic soundtrack** that transitions between intro, battle, and exploration themes
+- **Camera system** with smooth follow, zoom, and screen shake
+
+<p align="center">
+  <img src="assets/Selene-run.png" width="180" alt="Selene run"/>
+  <img src="assets/Selene-jump.png" width="180" alt="Selene jump/idle"/>
+  <img src="assets/Selene-gswordfix.png" width="180" alt="Selene greatsword"/>
+</p>
 
 ## Controls
 
-| Key      | Action                                |
-|----------|---------------------------------------|
-| `W A S D` | Run                                  |
-| `Space`  | Jump (in-place) / dismiss intro line |
-| `E`      | Interact (when prompt is shown)      |
-| `F5`     | Restart from the intro               |
-| `Esc`    | Quit                                 |
+| Key | Action |
+|-----|--------|
+| `W A S D` | Move |
+| `I` | Fire Punch (melee) |
+| `O` | Fireball (ranged) |
+| `K` | Ember Burst (ranged spread) |
+| `L` | Flame Shield (defense) |
+| `P` | Focus (restore MP) |
+| `Hold Shift` | Slow-mo + command selector |
+| `E` | Interact / talk to NPCs |
+| `Space` | Advance dialog |
+| `F5` | Restart from intro |
+| `Esc` | Quit |
 
 ## Build & Run
 
-Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download). MonoGame
-content tooling is restored automatically as a `dotnet tool`.
+Requires the [.NET 8 SDK](https://dotnet.microsoft.com/download). MonoGame content tooling is restored automatically.
 
 ```bash
 dotnet tool restore
@@ -73,61 +72,53 @@ dotnet build
 dotnet run
 ```
 
-The first build compiles all of `Content/Content.mgcb` (terrain, props,
-character sheets, font) into `.xnb` assets and then links the C# project.
-
 ## Project Layout
 
 ```
-SelenesHollow/
-  Game1.cs                MonoGame entry — split into world + UI draw passes
-  Globals.cs              Static singletons: SpriteBatch, Camera, Pixel, time
-  Program.cs              Bootstraps Game1
+SeleneKindling/
+  Game1.cs                MonoGame entry point
+  Globals.cs              Static singletons: SpriteBatch, Camera, time
   _Managers/
-    GameManager.cs        Owns the world, runs intro/play state machine
+    GameManager.cs        Game state machine (Intro / Battle / Overworld)
+    MusicManager.cs       Dynamic music transitions
+    InputManager.cs       Input state tracking
   _Models/
-    Map.cs                Tile grid + decoration list + collision AABBs
-    Tile.cs               Source-rect quad with per-instance origin
-    Player.cs             Animation state + continuous movement + collision
-    Camera.cs             Smooth-follow camera with map clamping
-    OrbManager.cs         Procedural-glow collectible orbs
+    Map.cs                50x30 tile grid, decorations, collision
+    Tile.cs               Drawable sprite with source rect, origin, and scale
+    Player.cs             Animation state machine, movement, collision
+    Camera.cs             Smooth follow with zoom and screen shake
+  _Battle/
+    BattleArena.cs        Real-time arena combat system
+    CommandWheel.cs       Move selector UI
   _Sequences/
-    IntroSequence.cs      Scripted opening: hold → fade → dialog → handoff
-    AmbientDialog.cs      Typewriter dialog with sequencing
-    DialogTriggers.cs     Cell-coordinate one-shot self-talk lines
-    ChaliceInteraction.cs Proximity prompt + multi-line monologue
-    HudOverlay.cs         Top-right orb counter
+    IntroSequence.cs      Cinematic opening with Wisp encounter
+    PortraitDialog.cs     Portrait dialog with animated talking sprites
+    AmbientDialog.cs      Typewriter self-talk system
+    DialogTriggers.cs     Cell-based one-shot dialog lines
+    ChaliceInteraction.cs Spirit shrine interaction
+    SpiritNPCs.cs         Overworld spirit characters with names
+    HudOverlay.cs         UI overlay components
   Content/
-    Content.mgcb          MonoGame Content Pipeline manifest
-    *.png / .spritefont   Tilesets, character sheets, props, dialog font
+    *.png                 Tilesets, character sheets, props, temple interior
+    *.wav                 Music tracks (intro, battle, explore)
+    *.spritefont          Dialog font
+  assets/
+    *.png                 Source sprite sheets and portraits
+    *.m4a                 Original music files
 ```
 
-## Architecture Notes
-
-The game runs two SpriteBatch passes per frame:
-
-1. **World pass** — `samplerState: PointClamp`, `transformMatrix: Camera.Transform`.
-   Map tiles, decorations, the player, orbs, and the chalice prompt all draw here.
-   Painter's algorithm sorts decorations by row index, with the player slotted
-   in by foot-Y so she walks behind/in front of objects naturally.
-2. **UI pass** — screen-space, untransformed. Intro overlays (black fade,
-   letterbox bars, dialog panel, hint), the orb HUD, and ambient dialog all
-   draw here so they don't get distorted by camera scrolling.
-
-The intro state lives in `IntroSequence` and exposes two flags:
-`PlayerVisible` (gameplay should be drawn beneath the fading-in black) and
-`Finished` (intro has fully handed off). The camera snaps from fountain to
-player on the frame `PlayerVisible` flips so the post-dismiss fade-in begins
-already centred on Selene.
+<p align="center">
+  <img src="assets/SeleneSleep.png" width="250" alt="Selene sleeping"/>
+  <img src="assets/SeleneDP.JPG" width="150" alt="Selene character design"/>
+</p>
 
 ## Credits
 
-- Code, design, animation logic — *Ishmam Ahmed*
-- Tilesets and prop atlas — *EPIC RPG World Pack ([FREE Demo] Ancient Ruins)*
-  by Pixel Hole Games
-- Character sprites — custom
+- Code, design, and animation logic by *Ishmam Ahmed*
+- Tilesets and prop atlas from *EPIC RPG World Pack ([FREE Demo] Ancient Ruins)* by Pixel Hole Games
+- Character sprites are custom AI-generated and hand-tuned
+- Music composed for the project
 
 ## License
 
-Source code is released under the MIT license. Asset packs retain their
-original licenses from the asset authors.
+Source code is released under the MIT license. Asset packs retain their original licenses.

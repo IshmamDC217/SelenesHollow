@@ -1,6 +1,6 @@
 namespace SelenesHollow;
 
-// Tiny in-screen overlay: orb count in the top-right corner. Hides itself
+// Tiny in-screen overlay: spirit count in the top-right corner. Hides itself
 // while the intro is running so it doesn't compete with the title beat.
 public class HudOverlay
 {
@@ -19,7 +19,7 @@ public class HudOverlay
         var sb = Globals.SpriteBatch;
         var screen = Globals.GraphicsDevice.Viewport.Bounds;
 
-        string text = $"Orbs  {_orbs.Collected} / {_orbs.Total}";
+        string text = $"Spirits  {_orbs.Collected} / {_orbs.Total}";
         var size = _font.MeasureString(text);
         const int pad = 16;
         int boxW = (int)size.X + pad * 2;

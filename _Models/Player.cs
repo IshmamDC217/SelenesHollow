@@ -20,13 +20,14 @@ public class Player
     private const int FRAMES_PER_ROW = 5;
     private const int TOTAL_FRAMES = 25;
     private const float FRAME_DURATION = 0.06f;     // ~16fps animation
-    private const float IDLE_FRAME_DURATION = 0.1125f; // 5-frame idle bob
+    private const float IDLE_FRAME_DURATION = 0.14f;   // ping-pong idle bob
     // Idle reuses settled poses from the jump sheet: row 4 cols 4-5 and
     // row 5 cols 1-3 (1-indexed) = frames 18, 19, 20, 21, 22. Each frame has
     // its body at a slightly different y in the source, so we override the
     // origin Y per frame to keep her feet planted instead of floating.
-    private static readonly int[] IdleFrames = { 18, 19, 20, 21, 22 };
-    private static readonly float[] IdleOriginY = { 203f, 194f, 192f, 193f, 197f };
+    // Ping-pong: 0→1→2→3→2→1→0→1→... so the loop is smooth
+    private static readonly int[] IdleFrames = { 18, 19, 20, 21, 20, 19 };
+    private static readonly float[] IdleOriginY = { 203f, 194f, 192f, 193f, 192f, 194f };
     private const float RUN_SPEED = 260f;           // pixels per second
     private const float DRAW_SCALE = 0.5f;          // smaller character per request
     // Character bbox center (horizontal) and feet (vertical) measured from
@@ -44,13 +45,10 @@ public class Player
     private int _frameIndex;
     private float _frameTimer;
     private KeyboardState _lastKb;
+    private bool _facingLeft;       // tracks last horizontal direction for idle mirroring
 
-    public Vector2 FootPos { get; private set; }
-    // When true, Draw is a no-op. Used to suppress the player while the intro
-    // sequence is showing the sleeping sprite at the fountain.
+    public Vector2 FootPos { get; set; }
     public bool IsHidden { get; set; }
-    // True on frames where Selene is actively running. Used by GameManager to
-    // detect "standing still" for idle musings.
     public bool IsMoving { get; private set; }
 
     public Player(Vector2 startFootPos)
@@ -84,8 +82,6 @@ public class Player
     {
         var kb = Keyboard.GetState();
         var dt = Globals.TotalSeconds;
-        bool jumpPressed = kb.IsKeyDown(Keys.Space) && _lastKb.IsKeyUp(Keys.Space);
-
         // ----- Read movement vector -----
         Vector2 dir = Vector2.Zero;
         if (kb.IsKeyDown(Keys.W)) dir.Y -= 1f;
@@ -95,19 +91,18 @@ public class Player
         bool moving = dir != Vector2.Zero;
         if (moving && dir.LengthSquared() > 1f) dir.Normalize();
 
-        // ----- State selection -----
-        // Mid-jump frames are non-interruptible until the cycle finishes.
+        // ----- State selection (jump removed — Space is used for battle/dialog) -----
         AnimState newState;
-        if (_state == AnimState.Jump && _frameIndex < TOTAL_FRAMES - 1)
-            newState = AnimState.Jump;
-        else if (jumpPressed)
-            newState = AnimState.Jump;
-        else if (!moving)
+        if (!moving)
             newState = AnimState.Idle;
         else if (Math.Abs(dir.Y) > Math.Abs(dir.X))
             newState = dir.Y < 0 ? AnimState.RunUp : AnimState.RunDown;
         else
             newState = dir.X < 0 ? AnimState.RunLeft : AnimState.RunRight;
+
+        // Track last horizontal direction for idle mirroring
+        if (dir.X < 0) _facingLeft = true;
+        else if (dir.X > 0) _facingLeft = false;
 
         if (newState != _state)
         {
@@ -124,12 +119,7 @@ public class Player
         {
             _frameTimer -= duration;
             _frameIndex++;
-            if (_state == AnimState.Jump)
-            {
-                // Play once: freeze on the last frame until state changes.
-                if (_frameIndex >= TOTAL_FRAMES) _frameIndex = TOTAL_FRAMES - 1;
-            }
-            else if (_state == AnimState.Idle)
+            if (_state == AnimState.Idle)
             {
                 // Cycle through IdleFrames; _frameIndex stores the position
                 // within that small array, not the global frame number.
@@ -143,7 +133,7 @@ public class Player
 
         // ----- Continuous movement -----
         // Don't drift while jumping in place.
-        IsMoving = moving && _state != AnimState.Jump;
+        IsMoving = moving;
         if (IsMoving)
         {
             // Try X and Y as separate steps so that bumping into a wall on
@@ -208,7 +198,7 @@ public class Player
 
         var (sheet, flip) = _state switch
         {
-            AnimState.Idle     => (_jump,       SpriteEffects.None),
+            AnimState.Idle     => (_jump, _facingLeft ? SpriteEffects.FlipHorizontally : SpriteEffects.None),
             AnimState.RunUp    => (_runIsoUp,   SpriteEffects.None),
             AnimState.RunDown  => (_runIsoDown, SpriteEffects.None),
             AnimState.RunLeft  => (_run,        SpriteEffects.FlipHorizontally),

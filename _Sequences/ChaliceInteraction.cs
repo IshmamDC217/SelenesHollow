@@ -1,14 +1,14 @@
 namespace SelenesHollow;
 
-// Watches the player's distance from the chalice. When she's close, draws a
-// floating "[E]" prompt above it (in world space so it scrolls with the
-// camera) and on E-press fires a multi-line monologue through AmbientDialog.
+// Watches the player's distance from the spirit shrine. When she's close,
+// draws a floating "[E]" prompt above it (in world space so it scrolls with
+// the camera) and on E-press fires a multi-line monologue through AmbientDialog.
 // Fires once per game (cleared on F5 by ResetRunState).
 public class ChaliceInteraction
 {
     private const float RANGE = 110f;
     // Cell coordinates of the chalice in Map.cs
-    private static readonly Point ChaliceCell = new(14, 17);
+    private static readonly Point ChaliceCell = new(24, 26);
 
     private readonly AmbientDialog _dialog;
     private readonly Vector2 _chaliceFootPos;
@@ -40,7 +40,7 @@ public class ChaliceInteraction
         {
             _consumed = true;
             _dialog.ShowSequence(
-                "The chalice is warm in my hands.",
+                "This shrine... it's pulsing with energy.",
                 "Visions... a tower, a name I almost remember...",
                 "\"Selene,\" the wind says. \"Come home.\"");
         }

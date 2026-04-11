@@ -1,27 +1,26 @@
 namespace SelenesHollow;
 
-// Collectible glowing orbs scattered around the map. Each orb pulses (size +
-// alpha modulated by a sine wave keyed off RunningSeconds and the orb's own
-// position so they don't pulse in sync), is picked up when Selene's foot
-// crosses within PICKUP_RANGE, and reports how many remain.
+// Collectible spirits (little Luma-like wisps) scattered around the map. Each
+// spirit pulses and bobs on its own phase so they shimmer independently. Picked
+// up when Selene's foot crosses within PICKUP_RANGE; a HUD counter tracks them.
 public class OrbManager
 {
     private const float PICKUP_RANGE = 56f;
     private const int   GLOW_TEX_SIZE = 64;
 
-    private class Orb
+    private class Spirit
     {
         public Vector2 WorldPos;
         public bool Collected;
     }
 
-    private readonly List<Orb> _orbs;
+    private readonly List<Spirit> _spirits;
     private readonly Texture2D _glow;
     private readonly AmbientDialog _dialog;
     private bool _allCollectedFired;
 
-    public int Total => _orbs.Count;
-    public int Collected => _orbs.Count(o => o.Collected);
+    public int Total => _spirits.Count;
+    public int Collected => _spirits.Count(s => s.Collected);
     public bool AllCollected => Collected == Total;
 
     public OrbManager(Map map, AmbientDialog dialog)
@@ -34,7 +33,7 @@ public class OrbManager
         // floated up a bit so they hover above the ground.
         Vector2 P(int x, int y, float lift = 60f) =>
             map.GetCellFootPos(new Point(x, y)) + new Vector2(0f, -lift);
-        _orbs = new List<Orb>
+        _spirits = new List<Spirit>
         {
             new() { WorldPos = P( 3, 11) },   // western garden
             new() { WorldPos = P(27, 10) },   // eastern ruins
@@ -48,26 +47,26 @@ public class OrbManager
 
     public void Reset()
     {
-        foreach (var o in _orbs) o.Collected = false;
+        foreach (var s in _spirits) s.Collected = false;
         _allCollectedFired = false;
     }
 
     public void Update(Vector2 playerFoot)
     {
-        foreach (var o in _orbs)
+        foreach (var s in _spirits)
         {
-            if (o.Collected) continue;
-            if (Vector2.DistanceSquared(o.WorldPos, playerFoot) < PICKUP_RANGE * PICKUP_RANGE)
+            if (s.Collected) continue;
+            if (Vector2.DistanceSquared(s.WorldPos, playerFoot) < PICKUP_RANGE * PICKUP_RANGE)
             {
-                o.Collected = true;
-                _dialog.Show($"An orb of memory... ({Collected}/{Total})");
+                s.Collected = true;
+                _dialog.Show($"A lost spirit... ({Collected}/{Total})");
             }
         }
         if (AllCollected && !_allCollectedFired)
         {
             _allCollectedFired = true;
             _dialog.ShowSequence(
-                "All seven... they're all here.",
+                "All seven spirits... they've all come back.",
                 "I think I'm starting to remember why I came.");
         }
     }
@@ -77,26 +76,27 @@ public class OrbManager
         var sb = Globals.SpriteBatch;
         var t = Globals.RunningSeconds;
         var origin = new Vector2(GLOW_TEX_SIZE / 2f, GLOW_TEX_SIZE / 2f);
-        foreach (var o in _orbs)
+        foreach (var s in _spirits)
         {
-            if (o.Collected) continue;
-            // Each orb pulses on its own phase based on its position so a
-            // group of nearby orbs visibly shimmer rather than blink in unison.
-            float phase = t * 2.4f + o.WorldPos.X * 0.013f + o.WorldPos.Y * 0.017f;
+            if (s.Collected) continue;
+            // Each spirit pulses on its own phase based on its position so a
+            // group of nearby spirits visibly shimmer rather than blink in unison.
+            float phase = t * 2.4f + s.WorldPos.X * 0.013f + s.WorldPos.Y * 0.017f;
             float pulse = 0.85f + 0.15f * (float)Math.Sin(phase);
             float bob   = 4f * (float)Math.Sin(phase * 0.7f);
+            // Warm golden glow (Luma-style) instead of cold blue
             sb.Draw(_glow,
-                o.WorldPos + new Vector2(0f, bob),
+                s.WorldPos + new Vector2(0f, bob),
                 null,
-                new Color(140, 200, 255) * pulse,
+                new Color(255, 210, 100) * pulse,
                 rotation: 0f,
                 origin: origin,
                 scale: pulse * 0.9f,
                 effects: SpriteEffects.None,
                 layerDepth: 0f);
-            // Hot core in the middle
+            // Hot white core
             sb.Draw(_glow,
-                o.WorldPos + new Vector2(0f, bob),
+                s.WorldPos + new Vector2(0f, bob),
                 null,
                 Color.White * (0.7f * pulse),
                 rotation: 0f,

@@ -1,9 +1,9 @@
 namespace SelenesHollow;
 
 // Square top-down grid à la Sea of Stars. 32x32 source tiles drawn at 3x for
-// 96 px on-screen cells. The world is 30x20 = a couple of screens in each
-// direction, with the camera following Selene as she explores. Decorations
-// (trees, ruins, fountain, temple, chalice) come from a separate props atlas
+// 96 px on-screen cells. The world is 50x30 = a spacious multi-screen area,
+// with the camera following Selene as she explores. Decorations
+// (trees, ruins, fountain, temple, shrine) come from a separate props atlas
 // and are anchored at their base. Each one optionally registers a base AABB
 // in _obstacles so the player can collide with it. Painter's algorithm sorts
 // by row so Selene walks behind/in front of objects naturally.
@@ -13,13 +13,13 @@ public class Map
     private const int DRAW_SCALE = 3;
     public const int TILE_SCREEN = TILE_SRC * DRAW_SCALE;   // 96 px
 
-    private readonly Point MAP_SIZE = new(30, 20);
+    private readonly Point MAP_SIZE = new(50, 30);
     private readonly Vector2 MAP_OFFSET = new(16f, 16f);
 
     // Where the fountain prop is anchored. Used by IntroSequence to place the
-    // sleeping Selene on the pedestal. Pushed south so the temple at row 4
+    // sleeping Selene on the pedestal. Pushed south so the temple at row 7
     // and the fountain don't visually overlap.
-    public static readonly Point FountainCell = new(14, 9);
+    public static readonly Point FountainCell = new(24, 14);
 
     // ----- Terrain source rects -----
     private static readonly Rectangle GrassPlain = new(64,  96, 32, 32);
@@ -69,7 +69,7 @@ public class Map
     private static readonly Vector2 TempleBox      = new(320f, 90f);
     private static readonly Vector2 BushColumnBox  = new( 90f, 70f);
     private static readonly Vector2 WallBox        = new(240f, 70f);
-    private static readonly Vector2 FountainBox    = new(300f, 170f);
+    private static readonly Vector2 FountainBox    = new(160f, 100f);
     // Chalice is interactable so we don't block walking right up to it.
 
     private readonly Tile[,] _tiles;
@@ -96,30 +96,91 @@ public class Map
         var props   = Globals.Content.Load<Texture2D>("props");
 
         // ----- Path layout -----
-        // Courtyard around the fountain (cell 14,9) plus paths radiating out
-        // toward the western garden, eastern ruins and southern grove.
+        // Organic winding paths connecting the temple, courtyard, garden,
+        // ruins, practice field, and southern shrine across the bigger map.
         var path = new HashSet<(int, int)>();
-        for (int x = 12; x <= 16; x++)
-            for (int y = 8; y <= 10; y++)
+
+        // Courtyard around the fountain (cells 22-26, 13-15)
+        for (int x = 22; x <= 26; x++)
+            for (int y = 13; y <= 15; y++)
                 path.Add((x, y));
-        // South spine — main exploration trail
-        for (int y = 9; y <= 18; y++) path.Add((14, y));
-        // West branch into the garden
-        for (int x = 4; x <= 14; x++) path.Add((x, 14));
-        // East branch into the ruins
-        for (int x = 14; x <= 26; x++) path.Add((x, 13));
-        // Side path into the southern grove (chalice clearing)
-        for (int y = 14; y <= 17; y++) path.Add((15, y));
 
-        // Sandy variant marks the ruins approach
+        // Clear side corridors around the fountain (east side bypass)
+        for (int y = 12; y <= 16; y++) { path.Add((26, y)); path.Add((22, y)); }
+
+        // North approach to temple — straight then slight wind
+        for (int y = 8; y <= 13; y++) path.Add((24, y));
+        path.Add((23, 8)); path.Add((25, 10)); path.Add((23, 12));
+
+        // South spine — from courtyard down to shrine
+        for (int y = 15; y <= 18; y++) path.Add((24, y));
+        path.Add((23, 18)); path.Add((23, 19)); path.Add((24, 19));
+        path.Add((24, 20)); path.Add((25, 20)); path.Add((25, 21));
+        path.Add((24, 21)); path.Add((24, 22)); path.Add((24, 23));
+        path.Add((23, 23)); path.Add((23, 24)); path.Add((24, 24));
+        path.Add((24, 25)); path.Add((24, 26));
+
+        // West branch — curves from courtyard through the garden
+        path.Add((22, 14)); path.Add((21, 14)); path.Add((20, 15));
+        path.Add((19, 15)); path.Add((18, 16)); path.Add((17, 16));
+        path.Add((16, 17)); path.Add((15, 17)); path.Add((14, 18));
+        path.Add((13, 18)); path.Add((12, 18)); path.Add((11, 19));
+        path.Add((10, 19)); path.Add((9, 20)); path.Add((8, 20));
+        path.Add((7, 20)); path.Add((6, 20)); path.Add((5, 19));
+        // Garden loop
+        path.Add((6, 19)); path.Add((7, 19)); path.Add((8, 19));
+        path.Add((8, 18)); path.Add((9, 18));
+
+        // East branch — winding from courtyard through ruins
+        path.Add((26, 14)); path.Add((27, 14)); path.Add((28, 15));
+        path.Add((29, 15)); path.Add((30, 16)); path.Add((31, 16));
+        path.Add((32, 17)); path.Add((33, 17)); path.Add((34, 17));
+        path.Add((35, 17)); path.Add((36, 16)); path.Add((37, 16));
+        path.Add((38, 17)); path.Add((39, 17));
+        // Ruins loop
+        path.Add((36, 17)); path.Add((37, 17)); path.Add((38, 16));
+        path.Add((35, 16)); path.Add((34, 16));
+
+        // Path to practice field — connects east branch up to (35, 10)
+        path.Add((35, 15)); path.Add((35, 14)); path.Add((36, 13));
+        path.Add((36, 12)); path.Add((35, 11)); path.Add((35, 10));
+
+        // Practice field — rectangular sandy area (cells 35-42, 5-10)
+        for (int x = 35; x <= 42; x++)
+            for (int y = 5; y <= 10; y++)
+                path.Add((x, y));
+
+        // Sandy variant: practice field + eastern ruins approach
         var sandy = new HashSet<(int, int)>();
-        for (int x = 22; x <= 26; x++) sandy.Add((x, 13));
+        for (int x = 35; x <= 42; x++)
+            for (int y = 5; y <= 10; y++)
+                sandy.Add((x, y));
+        for (int x = 33; x <= 40; x++)
+        {
+            sandy.Add((x, 16));
+            sandy.Add((x, 17));
+        }
 
-        // Dense grass marks the forest band along the top of the map
+        // Dense grass marks the forest band along the top of the map (rows 0-3)
         var dense = new HashSet<(int, int)>();
         for (int x = 0; x < MAP_SIZE.X; x++)
-            for (int y = 0; y <= 2; y++)
+            for (int y = 0; y <= 3; y++)
                 dense.Add((x, y));
+
+        // Build a set of grass cells that border a path cell (transition zone)
+        var pathEdge = new HashSet<(int, int)>();
+        foreach (var (px, py) in path)
+        {
+            for (int dy = -1; dy <= 1; dy++)
+            for (int dx = -1; dx <= 1; dx++)
+            {
+                if (dx == 0 && dy == 0) continue;
+                var nb = (px + dx, py + dy);
+                if (!path.Contains(nb) && nb.Item1 >= 0 && nb.Item1 < MAP_SIZE.X
+                                       && nb.Item2 >= 0 && nb.Item2 < MAP_SIZE.Y)
+                    pathEdge.Add(nb);
+            }
+        }
 
         var rng = new Random(1337);
         for (int y = 0; y < MAP_SIZE.Y; y++)
@@ -133,6 +194,9 @@ public class Map
                         : (rng.Next(4) == 0 ? PathMossy : PathClean);
                 else if (dense.Contains((x, y)))
                     src = (rng.Next(3) == 0) ? GrassWeedy : GrassDense;
+                else if (pathEdge.Contains((x, y)))
+                    // Transition zone: always weedy grass for softer blend
+                    src = GrassWeedy;
                 else
                     src = (rng.Next(5) == 0) ? GrassWeedy : GrassPlain;
                 _tiles[x, y] = new Tile(terrain, src, CellTopLeft(x, y), Vector2.Zero);
@@ -141,86 +205,151 @@ public class Map
 
         // ----- Decorations -----
         // Centerpiece: temple at top of the central axis, fountain south of it
-        AddProp(props, TempleRect, TempleAnchor, 14, 4, TempleBox);
-        AddProp(props, FountainRect, FountainAnchor, 14, 9, FountainBox);
+        AddProp(props, TempleRect, TempleAnchor, 24, 7, new Vector2(530f, 150f), scale: 5f);
+        AddProp(props, FountainRect, FountainAnchor, 24, 14, FountainBox);
 
-        // Pillars at courtyard corners
-        AddProp(props, PillarRect, PillarAnchor, 12,  8, PillarBox);
-        AddProp(props, PillarRect, PillarAnchor, 16,  8, PillarBox);
-        AddProp(props, PillarRect, PillarAnchor, 12, 10, PillarBox);
-        AddProp(props, PillarRect, PillarAnchor, 16, 10, PillarBox);
+        // Courtyard pillars removed — they blocked fountain walkways
 
-        // ----- Northern forest band (rows 0-2) -----
+        // Additional pillars along the approach to the temple
+        AddProp(props, Pillar2Rect, Pillar2Anchor, 22, 10, PillarBox);
+        AddProp(props, Pillar2Rect, Pillar2Anchor, 26, 10, PillarBox);
+        AddProp(props, Pillar2Rect, Pillar2Anchor, 21, 11, PillarBox);
+        AddProp(props, Pillar2Rect, Pillar2Anchor, 27, 11, PillarBox);
+
+        // Trees flanking the courtyard (make it feel like a clearing)
+        AddProp(props, BigTreeRect, BigTreeAnchor, 20, 13, BigTreeBox);
+        AddProp(props, BigTreeRect, BigTreeAnchor, 28, 13, BigTreeBox);
+        AddProp(props, BigTree2Rect, BigTree2Anchor, 20, 16, BigTreeBox);
+        AddProp(props, BigTree2Rect, BigTree2Anchor, 28, 16, BigTreeBox);
+
+        // Trees between temple and courtyard
+        AddProp(props, SmallTreeRect, SmallTreeAnchor, 22,  8, SmallTreeBox);
+        AddProp(props, SmallTreeRect, SmallTreeAnchor, 26,  8, SmallTreeBox);
+        AddProp(props, BareTreeRect, BareTreeAnchor, 21,  9, BareTreeBox);
+        AddProp(props, BareTreeRect, BareTreeAnchor, 27,  9, BareTreeBox);
+
+        // Scattered trees in the mid-map open areas
+        AddProp(props, BigTreeRect, BigTreeAnchor,  18, 10, BigTreeBox);
+        AddProp(props, BigTree2Rect, BigTree2Anchor, 30, 10, BigTreeBox);
+        AddProp(props, SmallTreeRect, SmallTreeAnchor, 19, 12, SmallTreeBox);
+        AddProp(props, SmallTreeRect, SmallTreeAnchor, 29, 12, SmallTreeBox);
+        AddProp(props, BushRect, BushAnchor, 17,  8, BushBox);
+        AddProp(props, BushRect, BushAnchor, 31,  8, BushBox);
+
+        // ----- Northern forest band (rows 0-3) — big trees every ~3 cols across 50-wide map -----
         var bigTrees = new (int, int)[]
         {
-            (1, 2), (3, 1), (5, 2), (7, 1), (9, 2),
-            (11, 1), (13, 2), (16, 2), (18, 1), (20, 2),
-            (22, 1), (24, 2), (26, 1), (28, 2),
+            ( 1, 2), ( 3, 1), ( 5, 2), ( 7, 1), ( 9, 2),
+            (11, 1), (13, 2), (15, 1), (17, 2), (19, 1),
+            (21, 2), (23, 1), (25, 2), (27, 1), (29, 2),
+            (31, 1), (33, 2), (35, 1), (37, 2), (39, 1),
+            (41, 2), (43, 1), (45, 2), (47, 1), (49, 2),
         };
         foreach (var c in bigTrees) AddProp(props, BigTreeRect, BigTreeAnchor, c.Item1, c.Item2, BigTreeBox);
+        // BigTree2 variants for variety
         AddProp(props, BigTree2Rect, BigTree2Anchor,  4, 0, BigTreeBox);
-        AddProp(props, BigTree2Rect, BigTree2Anchor, 17, 0, BigTreeBox);
-        AddProp(props, BigTree2Rect, BigTree2Anchor, 27, 0, BigTreeBox);
+        AddProp(props, BigTree2Rect, BigTree2Anchor, 12, 0, BigTreeBox);
+        AddProp(props, BigTree2Rect, BigTree2Anchor, 24, 0, BigTreeBox);
+        AddProp(props, BigTree2Rect, BigTree2Anchor, 36, 0, BigTreeBox);
+        AddProp(props, BigTree2Rect, BigTree2Anchor, 46, 0, BigTreeBox);
 
+        // Small trees at row 4 scattered
         var smallTrees = new (int, int)[]
         {
-            (2, 3), (6, 3), (10, 3), (15, 3), (19, 3), (23, 3), (27, 3),
+            (2, 4), (6, 4), (10, 4), (14, 4), (18, 4),
+            (22, 4), (28, 4), (32, 4), (38, 4), (44, 4), (48, 4),
         };
         foreach (var c in smallTrees) AddProp(props, SmallTreeRect, SmallTreeAnchor, c.Item1, c.Item2, SmallTreeBox);
-        AddProp(props, BareTreeRect, BareTreeAnchor,  8, 3, BareTreeBox);
-        AddProp(props, BareTreeRect, BareTreeAnchor, 21, 3, BareTreeBox);
+        AddProp(props, BareTreeRect, BareTreeAnchor,  8, 4, BareTreeBox);
+        AddProp(props, BareTreeRect, BareTreeAnchor, 16, 4, BareTreeBox);
+        AddProp(props, BareTreeRect, BareTreeAnchor, 34, 4, BareTreeBox);
+        AddProp(props, BareTreeRect, BareTreeAnchor, 42, 4, BareTreeBox);
 
-        // ----- Western garden (cols 0-6, rows 8-16) -----
+        // ----- Western garden (cols 3-14, rows 14-24) -----
         var bushes = new (int, int)[]
         {
-            (1, 8), (3, 9), (5, 8), (1, 10), (3, 11), (5, 11),
-            (2, 13), (1, 15), (4, 15), (6, 15), (3, 16),
+            ( 4, 15), ( 6, 14), ( 8, 15), ( 4, 17), ( 7, 17),
+            (10, 16), ( 3, 19), ( 5, 20), ( 9, 21), (11, 20),
+            ( 6, 22), ( 3, 23), ( 8, 23), (12, 22), (10, 24),
         };
         foreach (var c in bushes) AddProp(props, BushRect, BushAnchor, c.Item1, c.Item2, BushBox);
         var tiny = new (int, int)[]
         {
-            (2, 9), (4, 10), (1, 12), (5, 13), (2, 16),
+            ( 5, 15), ( 9, 16), ( 4, 18), (11, 18), ( 7, 19),
+            ( 3, 21), (10, 22), ( 6, 24),
         };
         foreach (var c in tiny) AddProp(props, TinyTreeRect, TinyTreeAnchor, c.Item1, c.Item2, TinyTreeBox);
-        AddProp(props, BushColumnRect, BushColumnAnchor, 6,  9, BushColumnBox);
-        AddProp(props, BushColumnRect, BushColumnAnchor, 6, 13, BushColumnBox);
-        AddProp(props, BushColumnRect, BushColumnAnchor, 0, 11, BushColumnBox);
+        AddProp(props, BushColumnRect, BushColumnAnchor,  7, 15, BushColumnBox);
+        AddProp(props, BushColumnRect, BushColumnAnchor, 12, 19, BushColumnBox);
+        AddProp(props, BushColumnRect, BushColumnAnchor,  3, 16, BushColumnBox);
+        AddProp(props, SmallTreeRect, SmallTreeAnchor,  5, 17, SmallTreeBox);
+        AddProp(props, SmallTreeRect, SmallTreeAnchor, 11, 21, SmallTreeBox);
 
-        // ----- Eastern ruins (cols 21-29, rows 8-15) -----
+        // ----- Practice field corner pillars (cells 35-42, 5-10) -----
+        AddProp(props, PillarRect, PillarAnchor, 35,  5, PillarBox);
+        AddProp(props, PillarRect, PillarAnchor, 42,  5, PillarBox);
+        AddProp(props, PillarRect, PillarAnchor, 35, 10, PillarBox);
+        AddProp(props, PillarRect, PillarAnchor, 42, 10, PillarBox);
+
+        // ----- Eastern ruins (cols 33-47, rows 12-22) -----
         var ruinsPillars = new (int, int)[]
         {
-            (22, 9), (24, 8), (26, 9), (28, 10), (23, 11),
-            (25, 14), (27, 15), (29, 14), (22, 15),
+            (34, 13), (37, 12), (40, 13), (43, 14), (36, 15),
+            (39, 18), (42, 17), (45, 16), (44, 20), (34, 20),
+            (38, 21), (46, 19), (33, 18),
         };
         foreach (var c in ruinsPillars) AddProp(props, Pillar2Rect, Pillar2Anchor, c.Item1, c.Item2, PillarBox);
         var walls = new (int, int)[]
         {
-            (24, 11), (26, 12), (23, 14), (25, 12), (28, 14),
+            (35, 14), (38, 15), (41, 16), (43, 19), (36, 20),
+            (40, 21), (44, 17),
         };
         foreach (var c in walls) AddProp(props, WallRect, WallAnchor, c.Item1, c.Item2, WallBox);
-        AddProp(props, BareTreeRect, BareTreeAnchor, 21, 10, BareTreeBox);
-        AddProp(props, BareTreeRect, BareTreeAnchor, 29,  9, BareTreeBox);
+        AddProp(props, BareTreeRect, BareTreeAnchor, 33, 14, BareTreeBox);
+        AddProp(props, BareTreeRect, BareTreeAnchor, 47, 13, BareTreeBox);
+        AddProp(props, BareTreeRect, BareTreeAnchor, 45, 21, BareTreeBox);
+        AddProp(props, BareTreeRect, BareTreeAnchor, 33, 22, BareTreeBox);
 
-        // ----- Southern grove (rows 15-19) -----
+        // ----- Southern grove (rows 23-28) -----
         var grove = new (int, int)[]
         {
-            (8, 16), (10, 17), (12, 18), (16, 18), (18, 16),
-            (20, 17), (22, 18), (6, 18),
+            (14, 24), (17, 23), (20, 25), (22, 27), (26, 27),
+            (29, 25), (32, 24), (19, 27), (28, 26),
         };
         foreach (var c in grove) AddProp(props, SmallTreeRect, SmallTreeAnchor, c.Item1, c.Item2, SmallTreeBox);
-        AddProp(props, TinyTreeRect, TinyTreeAnchor, 11, 19, TinyTreeBox);
-        AddProp(props, TinyTreeRect, TinyTreeAnchor, 17, 19, TinyTreeBox);
-        AddProp(props, BushRect, BushAnchor, 12, 19, BushBox);
+        AddProp(props, TinyTreeRect, TinyTreeAnchor, 16, 25, TinyTreeBox);
+        AddProp(props, TinyTreeRect, TinyTreeAnchor, 31, 25, TinyTreeBox);
+        AddProp(props, TinyTreeRect, TinyTreeAnchor, 21, 28, TinyTreeBox);
+        AddProp(props, TinyTreeRect, TinyTreeAnchor, 27, 28, TinyTreeBox);
+        AddProp(props, BushRect, BushAnchor, 18, 26, BushBox);
+        AddProp(props, BushRect, BushAnchor, 30, 26, BushBox);
 
-        // The chalice — interactable, no collision
-        AddProp(props, ChaliceRect, ChaliceAnchor, 14, 17, Vector2.Zero);
+        // Spirit shrine — broken pillar with mystical presence
+        AddProp(props, Pillar2Rect, Pillar2Anchor, 24, 26, Vector2.Zero);
 
-        // East/west edge garden touches so the map borders feel intentional
-        AddProp(props, BushRect, BushAnchor, 27, 6, BushBox);
-        AddProp(props, BushRect, BushAnchor, 28, 7, BushBox);
-        AddProp(props, BushRect, BushAnchor, 29, 5, BushBox);
-        AddProp(props, BushRect, BushAnchor,  0, 6, BushBox);
-        AddProp(props, BushRect, BushAnchor,  0, 8, BushBox);
+        // ----- WEST border wall (cols 0-2, dense tree line, rows 5-27) -----
+        for (int y = 5; y <= 27; y += 2)
+            AddProp(props, BigTreeRect, BigTreeAnchor, 0, y, BigTreeBox);
+        for (int y = 6; y <= 26; y += 2)
+            AddProp(props, BigTree2Rect, BigTree2Anchor, 1, y, BigTreeBox);
+        for (int y = 7; y <= 25; y += 3)
+            AddProp(props, BigTreeRect, BigTreeAnchor, 2, y, BigTreeBox);
+
+        // ----- EAST border wall (cols 47-49, dense tree line, rows 5-27) -----
+        for (int y = 5; y <= 27; y += 2)
+            AddProp(props, BigTreeRect, BigTreeAnchor, 49, y, BigTreeBox);
+        for (int y = 6; y <= 26; y += 2)
+            AddProp(props, BigTree2Rect, BigTree2Anchor, 48, y, BigTreeBox);
+        for (int y = 7; y <= 25; y += 3)
+            AddProp(props, BigTreeRect, BigTreeAnchor, 47, y, BigTreeBox);
+
+        // ----- SOUTH border (rows 28-29, trees on sides, opening at cols 21-27) -----
+        for (int x = 0; x <= 19; x += 2)
+            AddProp(props, BigTreeRect, BigTreeAnchor, x, 29, BigTreeBox);
+        for (int x = 28; x <= 49; x += 2)
+            AddProp(props, BigTree2Rect, BigTree2Anchor, x, 29, BigTreeBox);
+        AddProp(props, BushRect, BushAnchor, 20, 29, BushBox);
+        AddProp(props, BushRect, BushAnchor, 27, 29, BushBox);
 
         _decorations.Sort((a, b) => a.sortKey.CompareTo(b.sortKey));
     }
@@ -228,10 +357,10 @@ public class Map
     // Adds a decoration tile and (optionally) a collision rectangle. Pass
     // Vector2.Zero for collideSize to skip collision (e.g. the chalice).
     private void AddProp(Texture2D tex, Rectangle src, Vector2 anchor,
-                         int x, int y, Vector2 collideSize)
+                         int x, int y, Vector2 collideSize, float scale = 3f)
     {
         var foot = GetCellFootPos(new Point(x, y));
-        _decorations.Add((y, new Tile(tex, src, foot, anchor)));
+        _decorations.Add((y, new Tile(tex, src, foot, anchor, scale)));
         if (collideSize == Vector2.Zero) return;
         _obstacles.Add(new Rectangle(
             (int)(foot.X - collideSize.X / 2f),
